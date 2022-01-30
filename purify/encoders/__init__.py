@@ -13,10 +13,8 @@
 #
 # Description
 # -----------
-# encoders is a Python module which is part of the purify Python library,
-# it has a few functions to perform basic data encoders operations -- label encoding and one-hot encoding -- and
-# to inverse (i.e., to revert) those data transformations.
-# In this repository, only portions of the necessary modules of purify to perform synthetic tabular data generation 
+# encoders is a Python package which is part of the purify Python library.
+# In this repository, only portions of the necessary packages of purify to perform synthetic tabular data generation
 # are exposed.
 #
 #
@@ -64,7 +62,7 @@
 # September 2021
 ########################################################################################################################
 
-"""Top-level package of `purify.encoders` module"""
+"""`encoders` package of `purify`"""
 
 __author__ = 'diogo telmo neves'
 __email__ = 'tada.science@gmail.com'
