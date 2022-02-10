@@ -118,8 +118,8 @@ class tabulator(SGAIN):
 
     References
     ----------
-    [1] Diogo Telmo Neves, João Alves, Marcel Ganesh Naik, Alberto Proença, Fabian Praßer.
-        "To Use or Not to Use Wasserstein GANs for Missing Data Imputation on Tabular Data."
+    [1] Diogo Telmo Neves, João Alves, Marcel Ganesh Naik, Alberto José Proença, Fabian Praßer.
+        "From Missing Data Imputation to Data Generation."
         Journal of Computational Science (JCS), 2022.
     [2] Diogo Telmo Neves, Marcel Ganesh Naik, Alberto Proença.
         "SGAIN, WSGAIN-CP and WSGAIN-GP: Novel GAN Methods for Missing Data Imputation."
@@ -134,8 +134,8 @@ class tabulator_CP(WSGAIN_CP):
 
     References
     ----------
-    [1] Diogo Telmo Neves, João Alves, Marcel Ganesh Naik, Alberto Proença, Fabian Praßer.
-        "To Use or Not to Use Wasserstein GANs for Missing Data Imputation on Tabular Data."
+    [1] Diogo Telmo Neves, João Alves, Marcel Ganesh Naik, Alberto José Proença, Fabian Praßer.
+        "From Missing Data Imputation to Data Generation."
         Journal of Computational Science (JCS), 2022.
     [2] Diogo Telmo Neves, Marcel Ganesh Naik, Alberto Proença.
         "SGAIN, WSGAIN-CP and WSGAIN-GP: Novel GAN Methods for Missing Data Imputation."
@@ -151,8 +151,8 @@ class tabulator_GP(WSGAIN_GP):
 
     References
     ----------
-    [1] Diogo Telmo Neves, João Alves, Marcel Ganesh Naik, Alberto Proença, Fabian Praßer.
-        "To Use or Not to Use Wasserstein GANs for Missing Data Imputation on Tabular Data."
+    [1] Diogo Telmo Neves, João Alves, Marcel Ganesh Naik, Alberto José Proença, Fabian Praßer.
+        "From Missing Data Imputation to Data Generation."
         Journal of Computational Science (JCS), 2022.
     [2] Diogo Telmo Neves, Marcel Ganesh Naik, Alberto Proença.
         "SGAIN, WSGAIN-CP and WSGAIN-GP: Novel GAN Methods for Missing Data Imputation."
