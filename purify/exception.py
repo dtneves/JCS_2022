@@ -1,14 +1,14 @@
 ########################################################################################################################
 # Research Centers
 # ----------------
-# Centro ALGORITMI - School of Engineering – University of Minho
-# Braga - Portugal
-# http://algoritmi.uminho.pt/
-#
 # Medical Informatics Group
 # BIH - Berlin Institute of Health
 # Charité - Universitätsmedizin Berlin
 # https://www.bihealth.org/en/research/research-groups/fabian-prasser/
+#
+# Centro ALGORITMI - School of Engineering – University of Minho
+# Braga - Portugal
+# http://algoritmi.uminho.pt/
 #
 #
 # Description
