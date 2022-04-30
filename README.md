@@ -10,10 +10,12 @@ python main.py --algos="GAIN,SGAIN,WSGAIN-CP,WSGAIN-GP" --datasets="iris,yeast" 
 
 ## Citing
 <pre>
-@article{dtneves:jcs:2022,
-   title     = {{From Missing Data Imputation to Data Generation}},
-   author    = {Diogo Telmo Neves, João Alves, Marcel Ganesh Naik, Alberto José Proença, and Fabian Prasser},
-   booktitle = {Journal of Computational Science (JCS '22)},
-   year      = {2022}
+@article{neves2022missing,
+  title={From Missing Data Imputation to Data Generation},
+  author={Neves, Diogo Telmo and Alves, Jo{\~a}o and Naik, Marcel Ganesh and Proen{\c{c}}a, Alberto Jos{\'e} and Prasser, Fabian},
+  journal={Journal of Computational Science},
+  volume={61},
+  year={2022},
+  publisher={Elsevier}
 }
 </pre>
