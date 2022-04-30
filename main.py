@@ -82,8 +82,13 @@ import logging
 import numpy as np
 import pandas as pd
 
-from socket import gethostname
+from ordered_set import OrderedSet
 
+from socket import gethostname
+from argparse import ArgumentParser, Namespace
+
+# this can be removed, it was used to distinguish between the local machine and
+# the (remote) machine where we run the final experiments
 if gethostname() != 'BigMedilytics':
     from ctgan import CTGANSynthesizer
 
@@ -96,12 +101,10 @@ from purify.generation.tabulator import TabularDataGenerator
 
 from typing import List, Dict, Tuple, Union
 
-
 pd.set_option('display.max_rows', None)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
 pd.set_option('display.max_colwidth', None)
-
 
 DATASETS: Dict[str, int] = {
     'adult': 30162, 'breast': 569, 'cover': 581012, 'credit': 30000, 'eeg': 14980, 'iris': 150, 'iris_sample': 12,
@@ -119,9 +122,9 @@ def run_CTGAN(dataset: str = 'adult',
     #     filepath_or_buffer=f"./datasets/{dataset}.csv", na_values='?')
     df_raw: pd.DataFrame = pd.read_csv(
         filepath_or_buffer=f"{in_folder}/{dataset}.csv", skipinitialspace=True, na_values='?', skip_blank_lines=True)
-    df_pre: pd.DataFrame            # pandas DataFrame to hold preprocessed data
-    synthesizer: CTGANSynthesizer   # the CTGAN data synthesizer
-    df_sam: pd.DataFrame            # to store the samples (i.e., the synthetic data)
+    df_pre: pd.DataFrame  # pandas DataFrame to hold preprocessed data
+    synthesizer: CTGANSynthesizer  # the CTGAN data synthesizer
+    df_sam: pd.DataFrame  # to store the samples (i.e., the synthetic data)
     filename: str = f"{dataset}_CTGAN_{n_epochs}"
 
     # data preprocessing
@@ -162,10 +165,10 @@ def run_CTGAN(dataset: str = 'adult',
 
 
 def run_tabulator(dataset: str = 'adult',
-                  miss_rate: float = 0.2,
+                  ampu_rate: float = 0.2,
                   encoder_type: str = 'label',
                   algo: str = 'tabulator',
-                  loss: str = 'both',
+                  loss: str = 'mse',
                   batch_size: int = 128,
                   n_iterations: int = 1000,
                   n_samples: int = 100,
@@ -176,13 +179,13 @@ def run_tabulator(dataset: str = 'adult',
     #     filepath_or_buffer=f"./datasets/{dataset}.csv")
     df_raw: pd.DataFrame = pd.read_csv(
         filepath_or_buffer=f"{in_folder}/{dataset}.csv", skipinitialspace=True, na_values='?', skip_blank_lines=True)
-    df_pre: pd.DataFrame    # pandas DataFrame to hold preprocessed data
-    df_enc: pd.DataFrame    # pandas DataFrame to hold the encoded and the non-encoded data
-    df_sam: pd.DataFrame    # to store the samples (i.e., the synthetic data) in a pandas DataFrame
-    samples: np.ndarray     # the samples (i.e., the synthetic data)
+    df_pre: pd.DataFrame  # pandas DataFrame to hold preprocessed data
+    df_enc: pd.DataFrame  # pandas DataFrame to hold the encoded and the non-encoded data
+    df_sam: pd.DataFrame  # to store the samples (i.e., the synthetic data) in a pandas DataFrame
+    samples: np.ndarray  # the samples (i.e., the synthetic data)
     generator: TabularDataGenerator
     new_discrete_vars: Union[List[str], List[int]]
-    filename: str = f"{dataset}_{miss_rate}_{encoder_type}_{algo}_{batch_size}_{loss}_{n_iterations}"
+    filename: str = f"{dataset}_{ampu_rate}_{encoder_type}_{algo}_{batch_size}_{loss}_{n_iterations}"
 
     # data preprocessing
     df_pre = PreProcessor.drop_vars(dataset=dataset, df=df_raw)
@@ -205,13 +208,13 @@ def run_tabulator(dataset: str = 'adult',
     generator = TabularDataGenerator(
         data=df_enc.to_numpy(),
         algo=algo,
-        algo_parameters={'miss_rate': miss_rate, 'batch_size': batch_size, 'loss': loss, 'n_iterations': n_iterations})
+        algo_parameters={'miss_rate': ampu_rate, 'batch_size': batch_size, 'loss': loss, 'n_iterations': n_iterations})
     # logging some execution info
     if verbose:
         logging.basicConfig(filename=f"{out_folder}/{filename}.txt", level=logging.INFO)
         logging.info(f"{'--- tabulatorSGAIN ---' * 3}")
         logging.info(f"dataset: {dataset}")
-        logging.info(f"missing rate: {miss_rate}")
+        logging.info(f"amputation rate: {ampu_rate}")
         logging.info(f"encoder type: {encoder_type}")
         logging.info(f"raw shape: {df_raw.shape}")
         logging.info(f"preprocessing shape: {df_pre.shape}")
@@ -258,48 +261,152 @@ def run_tabulator(dataset: str = 'adult',
     return df_pre, df_sam
 
 
-if __name__ == "__main__":
+def main(args: Namespace) -> None:
+    algos: OrderedSet[str] = OrderedSet([algo.strip() for algo in args.algos.split(',')])
+    # TODO: GET RID OF HARDCODED
+    algos_set: OrderedSet[str] = OrderedSet(['CTGAN', 'tabulator', 'tabulator-CP', 'tabulator-GP'])
+    datasets: OrderedSet[str] = OrderedSet([dataset.strip() for dataset in args.datasets.split(',')])
+    # TODO: GET RID OF HARDCODED
+    datasets_set: OrderedSet[str] = OrderedSet(['breast', 'credit', 'eeg', 'iris', 'letter', 'news',
+                                                'spam', 'wine-red', 'wine-white', 'yeast'])
+    ampu_rates: OrderedSet[str] = OrderedSet([ampu_rate.strip() for ampu_rate in args.ampu_rates.split(',')])
     dataset: str
+    algo: str
+    ampu_rate: str
+    ampu_rate_tmp: float
     df_pre: pd.DataFrame
     df_sam: pd.DataFrame
 
-    # if len(sys.argv) == 4 and sys.argv[1] == 'CTGAN':
-    #     dataset = sys.argv[2]
-    #     df_pre, df_sam = CTGAN(dataset=dataset, n_epochs=int(sys.argv[3]), n_samples=DATASETS[dataset], verbose=False)
-    #     # report_correlations(original_data=df_pre, synthetic_data=df_sam, dataset=dataset, algorithm="CTGAN")
-    # elif len(sys.argv) == 7 and sys.argv[1] in tabulator.tabulators:
-    #     dataset = sys.argv[2]
-    #     df_pre, df_sam = tabulatorSGAIN(dataset=sys.argv[2],
-    #                                      miss_rate=float(sys.argv[3]),
-    #                                      encoder_type=sys.argv[4],  # ['label', 'one-hot']
-    #                                      algo=sys.argv[1],
-    #                                      loss=sys.argv[5],  # ['both', 'corr', 'mse']
-    #                                      batch_size=128,
-    #                                      n_iterations=int(sys.argv[6]),
-    #                                      n_samples=DATASETS[dataset],
-    #                                      verbose=False)
-    #     # main(_code=sys.argv[1], _dataset=sys.argv[2], _miss_rate=float(sys.argv[3]), _n_iterations=int(sys.argv[4]))
-    # else:
-    #     raise RuntimeError("Bad usage!")
-    #     # raise RuntimeError(f"Usage:\npython {sys.argv[0]} <code> <dataset> <miss_rate> <n_iterations>")
+    if not algos.issubset(algos_set):
+        raise ValueError(f"In terms of algorithms, expecting a subset of {algos_set} but got: {algos}.")
+    if not datasets.issubset(datasets_set):
+        raise ValueError(f"In terms of datasets, expecting a subset of {datasets_set} but got: {datasets}.")
+    for dataset in datasets:
+        for ampu_rate in ampu_rates:
+            try:
+                ampu_rate_tmp = float(ampu_rate)
+                if ampu_rate_tmp < 0.00 or ampu_rate_tmp > 1.00:
+                    raise ValueError(
+                        f"Expecting an amputation rate within the interval [0.00, 1.00] but got: {ampu_rate_tmp}.")
+            except ValueError:
+                print(f"Expecting an amputation rate within the interval [0.00, 1.00] but got: {ampu_rate}.")
+                exit(1)
+            for algo in algos:
+                print(f"{dataset} :: {ampu_rate} :: {algo}")
+                df_pre, df_sam = run_tabulator(dataset=dataset,
+                                               ampu_rate=ampu_rate_tmp,
+                                               encoder_type='one-hot',
+                                               algo=algo,
+                                               batch_size=128,
+                                               n_iterations=1000,
+                                               n_samples=DATASETS[dataset],
+                                               verbose=False)
 
-    # ['adult', 'breast', 'cover', 'credit', 'eeg', 'iris', 'letter', 'mushroom', 'news', 'spam', 'wine-red', 'wine-white', 'yeast']
-    # ['adult', 'breast', 'credit', 'eeg', 'letter', 'news', 'spam']
-    # ['iris', 'wine-red', 'wine-white', 'yeast']
 
-    for dataset in ['iris_sample']:
-        df_pre, df_sam = run_CTGAN(dataset=dataset, n_epochs=10, n_samples=DATASETS[dataset], verbose=False)
-        for miss_rate in [0.25]:  # [0.20, 0.40, 0.60, 0.80]:
-            for algo in ['tabulator']:  # ['tabulator', 'tabulator-CP', 'tabulator-GP']:
-                for loss in ['mse']:  # ['both', 'corr', 'mse']:
-                    print(f"{dataset} :: {miss_rate} :: {algo} :: {loss}")
-                    df_pre, df_sam = run_tabulator(dataset=dataset,
-                                                    miss_rate=miss_rate,
-                                                    encoder_type='one-hot',
-                                                    algo=algo,
-                                                    loss=loss,
-                                                    batch_size=128,
-                                                    n_iterations=1000,
-                                                    n_samples=DATASETS[dataset],
-                                                    verbose=False)
+if __name__ == "__main__":
+    parser: ArgumentParser = ArgumentParser()
 
+    parser.add_argument(
+        '--algos',
+        help="a csv list of the algorithms to run (e.g., 'CTGAN, tabulator, tabulator-CP, tabulator-GP')",
+        # choices=['CTGAN', 'tabulator', 'tabulator-CP', 'tabulator-GP'],
+        default='tabulator',
+        type=str)
+    parser.add_argument(
+        '--datasets',
+        help="a csv list of datasets short names",
+        # choices=['breast', 'cover-type', 'credit', 'eeg', 'iris', 'letter', 'mushroom',
+        #          'news', 'spam', 'wine-red', 'wine-white', 'yeast'],
+        default='letter',
+        type=str)
+    parser.add_argument(
+        '--ampu_rates',
+        help="a csv list of amputation rates ([0.00, 1.00])",
+        default='0.20',
+        type=str)
+    parser.add_argument(
+        '--batch_size',
+        help="number of samples in mini-batch",
+        default=128,
+        type=int)
+    parser.add_argument(
+        '--hint_rate',  # NOTE: the algorithms SGAIN, WSGAIN-CP, and WSGAIN-GP do NOT use this parameter,
+        help='hint probability',  # it is here just because the GAIN algorithm requires the `hint_rate` parameter
+        default=0.9,
+        type=float)
+    parser.add_argument(
+        '--alpha',
+        help="hyper-parameter to compute generator's loss",
+        default=100,
+        type=float)
+    parser.add_argument(
+        '--lambd',
+        help="hyper-parameter to compute critic's loss",
+        default=10,
+        type=float)
+    parser.add_argument(
+        '--clip_value',
+        help="clip (penalty) value",
+        default=0.01,
+        type=float)
+    parser.add_argument(
+        '--optimizer',
+        help="solvers' optimizer",
+        choices=['Adam', 'GDA', 'RMSProp'],
+        default='Adam',
+        type=str)
+    parser.add_argument(
+        '--learn_rate',
+        help="optimizer's learning rate",
+        default=1e-3,
+        type=float)
+    parser.add_argument(
+        '--beta_1',
+        help="Adam optimizer's hyper-parameter (1st moment estimates)",
+        default=0.900,
+        type=float)
+    parser.add_argument(
+        '--beta_2',
+        help="Adam optimizer's hyper-parameter (2nd moment estimates)",
+        default=0.999,
+        type=float)
+    parser.add_argument(
+        '--decay',
+        help="RMSProp optimizer's hyper-parameter (discounting factor for the history/coming gradient)",
+        default=0.900,
+        type=float)
+    parser.add_argument(
+        '--momentum',
+        help="RMSProp optimizer's hyper-parameter (a scalar tensor)",
+        default=0.000,
+        type=float)
+    parser.add_argument(
+        '--epsilon',
+        help="Adam hyper-parameter to ensure numerical stability or RMSProp hyper-parameter to avoid zero denominator",
+        default=1e-08,
+        type=float)
+    parser.add_argument(
+        '--n_iterations',
+        help="number of training iterations",
+        default=10000,
+        type=int)
+    parser.add_argument(
+        '--n_critic',
+        help="number of additional iterations to train the critic",
+        default=5,
+        type=int)
+    parser.add_argument(
+        '--n_runs',
+        help="number of runs",
+        default=3,
+        type=int)
+    parser.add_argument(
+        '--verbose',
+        help="to control verbosity",
+        choices=['False', 'True'],  # `bool` type does NOT work as expected
+        default='False',  # `bool` type does NOT work as expected
+        type=str)  # `bool` type does NOT work as expected
+
+    main(args=parser.parse_args())  # rock 'n roll
+
+# python main.py --algos="GAIN,SGAIN,WSGAIN-CP,WSGAIN-GP" --datasets="iris,yeast" --ampu_rates="0.20" --optimizer=GDA --learn_rate=0.001 --n_iterations=1000 --n_runs=3
