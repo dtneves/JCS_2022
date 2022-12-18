@@ -250,7 +250,7 @@ def get_dummies_inverse_transform(dataset: str,
         # TODO: CALL A TRANSFORMATION --> SEE LINE #262
         df_final[variable] = df_final[variable].astype(dtype=Metadata.DATASETS[dataset][variable]['data_type'])
     # adds also the continuous variables (i.e. columns/features) and, then, put them all in the original order
-    df_final = pd.concat(objs=[df[set(vars_order) - set(discrete_vars)], df_final], axis=1)[vars_order]
+    df_final = pd.concat(objs=[df[list(set(vars_order) - set(discrete_vars))], df_final], axis=1)[vars_order]
     # enforce the original data types
     # TODO: NO NEED TO DO IT FOR ALL --> ONLY FOR THE CONTINUOUS
     df_final = PostProcessor.set_data_types(dataset=dataset, df=df_final, verbose=verbose)
