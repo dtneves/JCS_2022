@@ -409,4 +409,4 @@ if __name__ == "__main__":
 
     main(args=parser.parse_args())  # rock 'n roll
 
-# python main.py --algos="GAIN,SGAIN,WSGAIN-CP,WSGAIN-GP" --datasets="iris,yeast" --ampu_rates="0.20" --optimizer=GDA --learn_rate=0.001 --n_iterations=1000 --n_runs=3
+# python main.py --algos="CTGAN,tabulator,tabulator-CP,tabulator-GP" --datasets="iris,yeast" --ampu_rates="0.20" --optimizer=GDA --learn_rate=0.001 --n_iterations=1000 --n_runs=3
